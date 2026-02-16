@@ -1,19 +1,14 @@
-use std::{
-    fs::{File, read_to_string},
-    io::Write,
-};
+use std::{env::args, fs::read_to_string};
 
 fn main() {
-    run_cat();
+    if let Some(path) = args().nth(1) {
+        run_cat(path);
+    }
 }
 
-fn run_cat() -> std::io::Result<()> {
-    let path = "src/main.rs";
-    // match read_to_string(path) {
-    //     Ok(contents) => println!("{}", contents),
-    //     Err(error) => println!("Error reading file: {}", error),
-    // }
-    let mut file = File::create(path)?;
-    file.write_all(b"Hello, world!")?;
-    Ok(())
+fn run_cat(path: String) {
+    match read_to_string(path) {
+        Ok(content) => print!("{}", content),
+        Err(e) => eprintln!("Error reading file: {}", e),
+    }
 }
