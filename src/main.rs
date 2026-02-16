@@ -9,6 +9,11 @@ impl GrepArgs {
     fn new(pattern: String, path: String) -> Self {
         Self { pattern, path }
     }
+
+    fn print_pattern(self, user: String) {
+        let pat = self.pattern;
+        println!("{}: {}", user, pat);
+    }
 }
 
 fn main() {
@@ -16,7 +21,7 @@ fn main() {
     let path = args().nth(2);
 
     if let (Some(pattern), Some(path)) = (pattern, path) {
-        run(path, pattern);
+        run(GrepArgs::new(pattern, path));
     }
 }
 
@@ -35,9 +40,9 @@ fn grep(content: String, pattern: String) {
     }
 }
 
-fn run(path: String, pattern: String) {
-    match read_to_string(path) {
-        Ok(content) => grep(content, pattern),
+fn run(args: GrepArgs) {
+    match read_to_string(args.path) {
+        Ok(content) => grep(content, args.pattern),
         Err(e) => eprintln!("Error reading file: {}", e),
     }
 }
