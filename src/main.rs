@@ -1,4 +1,5 @@
-use std::{env::args, fs::read_to_string};
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use std::fs::read_to_string;
 use structopt::StructOpt;
 #[derive(StructOpt)]
 #[structopt(name = "rsgrep")]
@@ -6,35 +7,27 @@ struct GrepArgs {
     #[structopt(name = "PATTERN")]
     pattern: String,
     #[structopt(name = "FILE")]
-    path: String,
-}
-
-impl GrepArgs {
-    fn new(pattern: String, path: String) -> Self {
-        Self { pattern, path }
-    }
-
-    fn print_pattern(self, user: String) {
-        let pat = self.pattern;
-        println!("{}: {}", user, pat);
-    }
+    path: Vec<String>,
 }
 
 fn main() {
     run(GrepArgs::from_args());
 }
 
-fn grep(state: &GrepArgs, content: String) {
+fn grep(state: &GrepArgs, content: String, file_name: &str) {
     for line in content.lines() {
         if line.contains(state.pattern.as_str()) {
-            println!("{}", line);
+            println!("{}: {}", file_name, line);
         }
     }
 }
 
 fn run(state: GrepArgs) {
-    match read_to_string(&state.path) {
-        Ok(content) => grep(&state, content),
-        Err(e) => eprintln!("Error reading file: {}", e),
-    }
+    state
+        .path
+        .par_iter()
+        .for_each(|file| match read_to_string(file) {
+            Ok(content) => grep(&state, content, file),
+            Err(e) => eprintln!("Error reading file {}: {}", file, e),
+        });
 }
