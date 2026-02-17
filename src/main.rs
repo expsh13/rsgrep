@@ -1,7 +1,11 @@
 use std::{env::args, fs::read_to_string};
-
+use structopt::StructOpt;
+#[derive(StructOpt)]
+#[structopt(name = "rsgrep")]
 struct GrepArgs {
+    #[structopt(name = "PATTERN")]
     pattern: String,
+    #[structopt(name = "FILE")]
     path: String,
 }
 
@@ -17,32 +21,20 @@ impl GrepArgs {
 }
 
 fn main() {
-    let pattern = args().nth(1);
-    let path = args().nth(2);
-
-    if let (Some(pattern), Some(path)) = (pattern, path) {
-        run(GrepArgs::new(pattern, path));
-    }
+    run(GrepArgs::from_args());
 }
 
-// fn run_cat(path: String) {
-//     match read_to_string(path) {
-//         Ok(content) => print!("{}", content),
-//         Err(e) => eprintln!("Error reading file: {}", e),
-//     }
-// }
-
-fn grep(content: String, pattern: String) {
+fn grep(state: &GrepArgs, content: String) {
     for line in content.lines() {
-        if line.contains(pattern.as_str()) {
+        if line.contains(state.pattern.as_str()) {
             println!("{}", line);
         }
     }
 }
 
-fn run(args: GrepArgs) {
-    match read_to_string(args.path) {
-        Ok(content) => grep(content, args.pattern),
+fn run(state: GrepArgs) {
+    match read_to_string(&state.path) {
+        Ok(content) => grep(&state, content),
         Err(e) => eprintln!("Error reading file: {}", e),
     }
 }
